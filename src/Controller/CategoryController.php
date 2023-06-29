@@ -45,16 +45,17 @@ class CategoryController extends AbstractController
                 if($newCategory->getCode()==0)
                     return new Response("Incorrect category number");             
                 else
-                    return new Response("Category already defined in the database");
+                    return new Response("<h1>Category already defined in the database</h1>");
             }
             
         }
-
+        $actualCategories = $this->entityManager->getRepository(Category::class)->findAll();
+        
         return $this->render('./categoryForm.html.twig', [
             'form' => $form,
+            'categories' => $actualCategories,
         ]);
     }
-
     public function checkForRecordInDatabase(Category $category): bool{
         $code = $category->getCode();
         $database = $this->entityManager->getRepository(Category::class)->findBy(['code'=>$code]);
