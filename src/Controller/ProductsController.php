@@ -12,16 +12,19 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 
 class ProductsController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
+    private MailerInterface $mailer;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, MailerInterface $mailer)
     {
         $this->entityManager = $entityManager;
+        $this->mailer = $mailer;
     }
 
     #[Route('/addProduct', name: 'add_product')]
@@ -41,12 +44,18 @@ class ProductsController extends AbstractController
             if ($form->isSubmitted() && $form->isValid()) {
 
                 $product = $form->getData();
+                $email = (new Email())
+                    ->from('kodanoprojectemail@gmail.com')
+                    ->to('jakubst2000@wp.pl')
+                    ->subject('New product added to the database')
+                    ->text("Product name: " . strval($product->getName()) . "\n" . " Product price: " .  strval($product->getPrice()));
 
+                $this->mailer->send($email);
                 //$this->entityManager->persist($product);
                 //$this->entityManager->flush();
 
                 
-                return new Response("<h3>Product added to the database</h3>");
+                return new Response("<h3>Product added to the database</h3>" );
             }
 
             return $this->render('./productForm.html.twig', [
