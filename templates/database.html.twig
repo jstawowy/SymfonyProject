@@ -1,3 +1,13 @@
+<h1> List of all the products in the database:</h1>
 {% for item in database %}
-    <li>{{item.name}},{{item.price}}</li>
+<ul>
+    <li><h2>{{item.name}}:{{item.price}} zł</h2>
+    <dl>Connected category numbers:</dl>
+    <ul> 
+    {% for category in item.category %}
+        <li>{{category.code}}</li>
+    {% endfor %}
+    </ul>
+    </li>
+</ul>
 {% endfor %}

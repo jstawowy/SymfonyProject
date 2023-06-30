@@ -104,17 +104,9 @@ class ProductsController extends AbstractController
 
 
     
-    #[Route('/index', name: 'index')]
-    public function index(): Response
+    #[Route('/allProducts', name: 'allProducts')]
+    public function checkAllProducts(): Response
     {
-        $product = new Product();
-        $product->setName("Lampka");
-        $product->setPrice(99);
-
-
-
- //       $this->entityManager->persist($product);
- //       $this->entityManager->flush();
 
         $database = $this->entityManager->getRepository(Product::class)->findAll();
 
