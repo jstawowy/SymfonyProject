@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Product;
+use App\Entity\Category;
 use App\Form\ProductType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -33,9 +34,13 @@ class ProductsController extends AbstractController
     #[Route('/addProduct', name: 'add_product')]
     public function new(Request $request): Response
     {
+        $category = $this->entityManager->getRepository(Category::class)->FindOneBy(['code' =>'350']);
+        $category2 = $this->entityManager->getRepository(Category::class)->FindOneBy(['code' =>'1212']);
         $product = new Product();
         $product->setName('Name of the product');
         $product->setPrice(0);
+        $product->addCategory($category);
+        $product->addCategory($category2);
 
         $form = $this->createForm(ProductType::class, $product)
             ->add('name', TextType::class)
@@ -47,10 +52,13 @@ class ProductsController extends AbstractController
             if ($form->isSubmitted() && $form->isValid()) {
 
                 $product = $form->getData();
+                
+                
+                
                 $this->sendMail($product);
                 
-                //$this->entityManager->persist($product);
-                //$this->entityManager->flush();
+                $this->entityManager->persist($product);
+                $this->entityManager->flush();
 
                 
                 return new Response("<h3>Product added to the database</h3>" );
@@ -62,14 +70,17 @@ class ProductsController extends AbstractController
     }
     private function sendMail(Product $product){
         $this->logger->info("Product name: " . strval($product->getName()) . "\n" . " Product price: " .  strval($product->getPrice()));
-                
-                
+
+        $productCategories = "Categories of the product: \n";
+        foreach ($product->getCategory() as $category){
+            $productCategories = $productCategories . strval($category->getCode()) . "\n";
+        }
                 
         $email = (new Email())
             ->from('kodanoprojectemail@gmail.com')
             ->to('jakubst2000@wp.pl')
             ->subject('New product added to the database')
-            ->text("Product name: " . strval($product->getName()) . "\n" . " Product price: " .  strval($product->getPrice()));
+            ->text("Product name: " . strval($product->getName()) . "\n" . " Product price: " .  strval($product->getPrice() . "\n" . strval($productCategories)));
 
         $this->mailer->send($email);
     }
