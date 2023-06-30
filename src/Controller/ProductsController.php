@@ -9,6 +9,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -34,39 +37,48 @@ class ProductsController extends AbstractController
     #[Route('/addProduct', name: 'add_product')]
     public function new(Request $request): Response
     {
-        $category = $this->entityManager->getRepository(Category::class)->FindOneBy(['code' =>'350']);
-        $category2 = $this->entityManager->getRepository(Category::class)->FindOneBy(['code' =>'1212']);
         $product = new Product();
         $product->setName('Name of the product');
         $product->setPrice(0);
-        $product->addCategory($category);
-        $product->addCategory($category2);
 
-        $form = $this->createForm(ProductType::class, $product)
-            ->add('name', TextType::class)
-            ->add('price', IntegerType::class)
-            ->add('save', SubmitType::class, ['label' => 'Add product'])
-            ;
+        $form = $this->createForm(ProductType::class, $product);
 
             $form->handleRequest($request);
             if ($form->isSubmitted() && $form->isValid()) {
 
                 $product = $form->getData();
                 
+                if($product->getPrice()==0){
+                    echo("<h4>Product can't be free</h4>");
+                }
+                elseif($this->checkDatabase($product)){
+                    echo("Product already in the database");
+                }
+                else{
+                    
+                        
+                
+                    $this->entityManager->persist($product);
+                    $this->entityManager->flush();
+    
+                    $this->sendMail($product);
+                    return new Response("<h3>Product added to the database. Log saved. Email sent.</h3>" );
+                }
                 
                 
-                $this->sendMail($product);
-                
-                $this->entityManager->persist($product);
-                $this->entityManager->flush();
-
-                
-                return new Response("<h3>Product added to the database</h3>" );
             }
 
             return $this->render('./productForm.html.twig', [
                 'form' => $form,
             ]);
+    }
+    private function checkDatabase(Product $product):bool{
+        $database = $this->entityManager->getRepository(Product::class);
+        
+        if($database->findOneBy(['name' => $product->getName(), 'price' =>$product->getPrice()])){
+            return true;
+        }
+        else return false;
     }
     private function sendMail(Product $product){
         $this->logger->info("Product name: " . strval($product->getName()) . "\n" . " Product price: " .  strval($product->getPrice()));
@@ -82,6 +94,7 @@ class ProductsController extends AbstractController
             ->subject('New product added to the database')
             ->text("Product name: " . strval($product->getName()) . "\n" . " Product price: " .  strval($product->getPrice() . "\n" . strval($productCategories)));
 
+        
         $this->mailer->send($email);
     }
 
