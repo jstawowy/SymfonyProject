@@ -14,17 +14,20 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use Psr\Log\LoggerInterface;
 
 
 class ProductsController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
     private MailerInterface $mailer;
+    private LoggerInterface $logger;
 
-    public function __construct(EntityManagerInterface $entityManager, MailerInterface $mailer)
+    public function __construct(EntityManagerInterface $entityManager, MailerInterface $mailer, LoggerInterface $logger)
     {
         $this->entityManager = $entityManager;
         $this->mailer = $mailer;
+        $this->logger = $logger;
     }
 
     #[Route('/addProduct', name: 'add_product')]
@@ -44,6 +47,11 @@ class ProductsController extends AbstractController
             if ($form->isSubmitted() && $form->isValid()) {
 
                 $product = $form->getData();
+
+                $this->logger->info("Product name: " . strval($product->getName()) . "\n" . " Product price: " .  strval($product->getPrice()));
+                
+                
+                
                 $email = (new Email())
                     ->from('kodanoprojectemail@gmail.com')
                     ->to('jakubst2000@wp.pl')
