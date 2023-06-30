@@ -82,17 +82,21 @@ class ProductsController extends AbstractController
     }
     private function sendMail(Product $product){
         $this->logger->info("Product name: " . strval($product->getName()) . "\n" . " Product price: " .  strval($product->getPrice()));
-
-        $productCategories = "Categories of the product: \n";
-        foreach ($product->getCategory() as $category){
-            $productCategories = $productCategories . strval($category->getCode()) . "\n";
+        $productCategories = "";
+        if(count($product->getCategory())>0){
+            $productCategories = "Categories of the product: \n";
+            foreach ($product->getCategory() as $category){
+                $productCategories = $productCategories . strval($category->getCode()) . "\n";
+            }
         }
+        
+        
                 
         $email = (new Email())
             ->from('kodanoprojectemail@gmail.com')
             ->to('jakubst2000@wp.pl')
             ->subject('New product added to the database')
-            ->text("Product name: " . strval($product->getName()) . "\n" . " Product price: " .  strval($product->getPrice() . "\n" . strval($productCategories)));
+            ->text("Product name: " . strval($product->getName()) . "\n" . " Product price: " .  strval($product->getPrice() . "\n" . $productCategories));
 
         
         $this->mailer->send($email);
