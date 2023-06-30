@@ -47,18 +47,8 @@ class ProductsController extends AbstractController
             if ($form->isSubmitted() && $form->isValid()) {
 
                 $product = $form->getData();
-
-                $this->logger->info("Product name: " . strval($product->getName()) . "\n" . " Product price: " .  strval($product->getPrice()));
+                $this->sendMail($product);
                 
-                
-                
-                $email = (new Email())
-                    ->from('kodanoprojectemail@gmail.com')
-                    ->to('jakubst2000@wp.pl')
-                    ->subject('New product added to the database')
-                    ->text("Product name: " . strval($product->getName()) . "\n" . " Product price: " .  strval($product->getPrice()));
-
-                $this->mailer->send($email);
                 //$this->entityManager->persist($product);
                 //$this->entityManager->flush();
 
@@ -69,6 +59,19 @@ class ProductsController extends AbstractController
             return $this->render('./productForm.html.twig', [
                 'form' => $form,
             ]);
+    }
+    private function sendMail(Product $product){
+        $this->logger->info("Product name: " . strval($product->getName()) . "\n" . " Product price: " .  strval($product->getPrice()));
+                
+                
+                
+        $email = (new Email())
+            ->from('kodanoprojectemail@gmail.com')
+            ->to('jakubst2000@wp.pl')
+            ->subject('New product added to the database')
+            ->text("Product name: " . strval($product->getName()) . "\n" . " Product price: " .  strval($product->getPrice()));
+
+        $this->mailer->send($email);
     }
 
 
