@@ -39,13 +39,13 @@ class CategoryController extends AbstractController
                 $this->entityManager->persist($newCategory);
                 $this->entityManager->flush();
     
-                return $this->redirectToRoute('categoryCreated');
+                return $this->redirect($request->getUri());
             }
             else{
                 if($newCategory->getCode()==0)
-                    return new Response("Incorrect category number");             
+                    echo ("<h4>Incorrect category number</h4>");             
                 else
-                    return new Response("<h1>Category already defined in the database</h1>");
+                    echo ("<h4>Category already defined in the database</h4>");
             }
             
         }
