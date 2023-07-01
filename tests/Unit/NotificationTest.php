@@ -8,6 +8,10 @@ use Symfony\Component\Notifier\Message\ChatMessage;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Recipient\Recipient;
 
+use function PHPUnit\Framework\assertGreaterThan;
+use function PHPUnit\Framework\lessThan;
+use function PHPUnit\Framework\lessThanOrEqual;
+
 class NotificationTest extends TestCase
 {
     public function testSMS(): void
@@ -21,7 +25,8 @@ class NotificationTest extends TestCase
         self::assertSame(expected:'+48645346453', actual: $sms->getPhone() );
         self::assertSame(expected:'A new login was detected!', actual: $sms->getSubject() );
         self::assertSame(expected:'+48345234907', actual: $sms->getFrom() );
-        
+        self::assertGreaterThan(expected: 9, actual: strlen($sms->getPhone()));
+        self::assertLessThanOrEqual(expected:16, actual:strlen($sms->getPhone()));
     }
     public function testSlack():void{
 
@@ -43,6 +48,7 @@ class NotificationTest extends TestCase
        self::assertSame(expected:'Watchout!', actual: $emailNotification->getContent() );
        self::assertSame(expected: ['email'], actual: $emailNotification->getChannels($recipient) );
        self::assertSame(expected: "jakubst2000@wp.pl", actual: $recipient->getEmail() );
+       self::assertStringContainsString("@", $recipient->getEmail());
     
     }
 }
